@@ -1,0 +1,7 @@
+# IDE project files
+.idea/
+
+
+# Local PHP environment config
+/vendor/
+composer.lock

@@ -1,0 +1,25 @@
+{
+    "require": {
+        "php": "^8.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "app\\Entity\\": "app/Entity/",
+            "app\\DTO\\": "app/DTO/",
+            "app\\Repository\\": "app/Repository/",
+            "app\\Service\\": "app/Service/",
+            "app\\Controller\\": "app/Controller/",
+            "app\\Utils\\": "app/Utils/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "post-autoload-dump": [
+            "php -r \"file_exists('bootstrap.php') || touch('bootstrap.php');\""
+        ]
+    }
+}
