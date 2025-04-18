@@ -78,12 +78,11 @@ class TaskController
      * @param Request $request
      * @return void
      */
-    public function updateStatus(Request $request): void
+    public function updateStatus($id, Request $request): void
     {
         $data = $request->all();
 
         $validator = new Validator($data, [
-            'id' => ['required'],
             'status' => ['required']
         ]);
 
@@ -93,7 +92,7 @@ class TaskController
         }
 
         $dto = new TaskStatusDTO(
-            id: $data['id'],
+            id: $id,
             status: TaskStatus::from($data['status'])
         );
 
@@ -123,6 +122,31 @@ class TaskController
         $this->taskService->assignTask($data['id'], $data['assigneeId']);
 
         JsonResponse::success(['message' => 'Task assigned']);
+    }
+
+    /**
+     * @param string $id
+     * @param array $request
+     * @return void
+     */
+    public function assignTask(string $id, Request $request): void
+    {
+        $data = $request->all();
+
+        $validator = new Validator($data, [
+            'assigneeId' => ['required']
+        ]);
+
+        if (! $validator->passes()) {
+            JsonResponse::error($validator->errors(), 422);
+            return;
+        }
+
+        $this->taskService->assignTask($id, $data['assigneeId']);
+
+        JsonResponse::success([
+            'message' => "Task assigned to user {$data['assigneeId']}.",
+        ]);
     }
 
     /**

@@ -16,7 +16,7 @@ class TaskRepository implements TaskRepositoryInterface
         if (file_exists($this->storageFile)) {
             $tasks = json_decode(file_get_contents($this->storageFile), true);
             foreach ($tasks as $task) {
-                $this->tasks[] = new Task(
+                $this->tasks[$task['id']] = new Task(
                     id: $task['id'],
                     title: $task['title'],
                     description: $task['description'],
@@ -34,7 +34,7 @@ class TaskRepository implements TaskRepositoryInterface
      */
     public function save(Task $task): void
     {
-        $this->tasks[] = $task;
+        $this->tasks[$task->getId()] = $task;
         $this->persist();
     }
 
