@@ -88,4 +88,19 @@ class Task
     {
         $this->status = $status;
     }
+
+    /**
+     * @return array
+     */
+    public function toArray(): array
+    {
+        return [
+            'id' => $this->id,
+            'title' => $this->title,
+            'description' => $this->description,
+            'status' => $this->status->value,
+            'assigneeId' => $this->assigneeId,
+            'createdAt' => $this->createdAt->format(\DateTimeInterface::ATOM),
+        ];
+    }
 }

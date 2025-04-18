@@ -88,4 +88,13 @@ class TaskService
 
         $this->repository->save($task);
     }
+
+    /**
+     * @param string $id
+     * @return void
+     */
+    public function deleteTask(string $id): void
+    {
+        $this->repository->delete($id);
+    }
 }

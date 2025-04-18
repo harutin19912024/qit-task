@@ -1,20 +1,18 @@
 {
     "require": {
-        "php": "^8.0"
+        "php": "^8.2"
     },
     "autoload": {
         "psr-4": {
+            "app\\Router\\": "app/Router/",
             "app\\Entity\\": "app/Entity/",
             "app\\DTO\\": "app/DTO/",
             "app\\Repository\\": "app/Repository/",
             "app\\Service\\": "app/Service/",
             "app\\Controller\\": "app/Controller/",
-            "app\\Utils\\": "app/Utils/"
-        }
-    },
-    "autoload-dev": {
-        "psr-4": {
-            "Tests\\": "tests/"
+            "app\\Utils\\": "app/Utils/",
+            "app\\Validator\\": "app/Validator/",
+            "app\\Http\\": "app/Http/"
         }
     },
     "scripts": {

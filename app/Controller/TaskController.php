@@ -5,7 +5,10 @@ namespace app\Controller;
 use app\DTO\TaskDTO;
 use app\DTO\TaskStatusDTO;
 use app\Entity\TaskStatus;
+use app\Http\JsonResponse;
+use app\Http\Request;
 use app\Service\TaskService;
+use app\Validator\Validator;
 
 /**
  * Class TaskController
@@ -20,65 +23,121 @@ class TaskController
     ) {}
 
     /**
-     * @param array $request
+     * @param Request $request
      * @return void
+     * @throws \Random\RandomException
      */
-    public function create(array $request): void
+    public function create(Request $request): void
     {
+        $data = $request->all();
+
+        $validator = new Validator($data, [
+            'title' => ['required'],
+            'description' => ['required'],
+            'assigneeId' => ['nullable', 'string'],
+        ]);
+
+        if (! $validator->passes()) {
+            JsonResponse::error($validator->errors(), 422);
+            return;
+        }
+
         $dto = new TaskDTO(
-            title: $request['title'],
-            description: $request['description'],
-            assigneeId: $request['assigneeId'] ?? null
+            title: $data['title'],
+            description: $data['description'],
+            assigneeId: $data['assigneeId'] ?? null
         );
 
         $task = $this->taskService->createTask($dto);
 
-        echo "Task created with ID: {$task->getId()}\n";
+        JsonResponse::success([
+            'message' => 'Task created successfully',
+            'task' => $task->toArray()
+        ], 201);
     }
 
     /**
-     * @param array $queryParams
+     * @param Request $request
      * @return void
      */
-    public function list(array $queryParams): void
+    public function list(Request $request): void
     {
-        $status = isset($queryParams['status']) ? TaskStatus::from($queryParams['status']) : null;
-        $assigneeId = $queryParams['assigneeId'] ?? null;
+        $status = $request->query('status');
+        $assigneeId = $request->query('assigneeId');
 
-        $tasks = $this->taskService->getAllTasks($status, $assigneeId);
+        $statusEnum = $status ? TaskStatus::from($status) : null;
 
-        foreach ($tasks as $task) {
-            echo "- [{$task->getStatus()->value}] {$task->getTitle()} (ID: {$task->getId()})\n";
+        $tasks = $this->taskService->getAllTasks($statusEnum, $assigneeId);
+
+        $response = array_map(fn($task) => $task->toArray(), $tasks);
+
+        JsonResponse::success($response);
+    }
+
+    /**
+     * @param Request $request
+     * @return void
+     */
+    public function updateStatus(Request $request): void
+    {
+        $data = $request->all();
+
+        $validator = new Validator($data, [
+            'id' => ['required'],
+            'status' => ['required']
+        ]);
+
+        if (! $validator->passes()) {
+            JsonResponse::error($validator->errors(), 422);
+            return;
         }
-    }
 
-    /**
-     * @param array $request
-     * @return void
-     */
-    public function updateStatus(array $request): void
-    {
         $dto = new TaskStatusDTO(
-            id: $request['id'],
-            status: TaskStatus::from($request['status'])
+            id: $data['id'],
+            status: TaskStatus::from($data['status'])
         );
 
         $this->taskService->updateTaskStatus($dto);
 
-        echo "Task status updated successfully.\n";
+        JsonResponse::success(['message' => 'Task status updated']);
     }
 
     /**
-     * @param array $request
+     * @param Request $request
      * @return void
      */
-    public function assign(array $request): void
+    public function assign(Request $request): void
     {
-        $this->taskService->assignTask(
-            id: $request['id'],
-            userId: $request['assigneeId']
-        );
+        $data = $request->all();
 
-        echo "Task assigned to user {$request['assigneeId']}.\n";
+        $validator = new Validator($data, [
+            'id' => ['required'],
+            'assigneeId' => ['required']
+        ]);
+
+        if (! $validator->passes()) {
+            JsonResponse::error($validator->errors(), 422);
+            return;
+        }
+
+        $this->taskService->assignTask($data['id'], $data['assigneeId']);
+
+        JsonResponse::success(['message' => 'Task assigned']);
+    }
+
+    /**
+     * @param string $id
+     * @return void
+     */
+    public function delete(string $id): void
+    {
+        if (empty($id)) {
+            JsonResponse::error(['message' => 'Task ID is required']);
+            return;
+        }
+
+        $this->taskService->deleteTask($id);
+
+        JsonResponse::success(['message' => "Task with ID {$id} deleted"]);
     }
 }
